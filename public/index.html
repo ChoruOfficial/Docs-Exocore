@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Documentation Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/base16/material-palenight.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c0a09;
+            word-break: break-word;
+        }
+        .aurora-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        .aurora-background::before, .aurora-background::after {
+            content: '';
+            position: absolute;
+            width: 800px;
+            height: 800px;
+            background-image: radial-gradient(circle, rgba(167, 139, 250, 0.3) 0%, rgba(167, 139, 250, 0) 60%);
+            border-radius: 50%;
+            animation: move-aurora 20s infinite linear;
+            filter: blur(100px);
+        }
+        .aurora-background::after {
+            background-image: radial-gradient(circle, rgba(251, 146, 60, 0.2) 0%, rgba(251, 146, 60, 0) 70%);
+            animation-delay: -10s;
+            animation-duration: 25s;
+        }
+        @keyframes move-aurora {
+            0% { transform: translate(-30%, -30%) rotate(0deg); }
+            50% { transform: translate(30%, 30%) rotate(180deg); }
+            100% { transform: translate(-30%, -30%) rotate(360deg); }
+        }
+        .prose-custom { color: #d6d3d1; }
+        .prose-custom h1, .prose-custom h2, .prose-custom h3 { color: #fafaf9; border-color: #44403c; }
+        .prose-custom a { color: #c084fc; font-weight: 500; text-decoration: none; transition: color 0.2s; }
+        .prose-custom a:hover { color: #d8b4fe; text-decoration: underline; }
+        .prose-custom code:not(pre > code) { font-family: 'JetBrains Mono', monospace; color: #fb923c; background-color: #292524; padding: 0.2em 0.4em; border-radius: 6px; font-size: 0.9em; }
+        .prose-custom pre { background-color: rgba(20, 20, 22, 0.7); backdrop-filter: blur(10px); border: 1px solid #44403c; border-radius: 0.75rem; padding-top: 2.5rem; position: relative; white-space: pre; overflow-x: auto; word-break: normal; }
+        .prose-custom pre code { white-space: pre; overflow-x: auto; word-break: normal; }
+        .prose-custom pre::before { content: attr(data-lang); position: absolute; top: 0; left: 0; right: 0; padding: 0.5rem 1rem; background-color: rgba(41, 37, 36, 0.7); color: #a8a29e; font-family: 'Inter', sans-serif; font-size: 0.875rem; font-weight: 600; border-top-left-radius: 0.75rem; border-top-right-radius: 0.75rem; border-bottom: 1px solid #44403c; }
+        .prose-custom blockquote { border-left-color: #a78bfa; color: #a8a29e; background-color: rgba(41, 37, 36, 0.5); padding: 1em 1.5em; }
+        .prose-custom strong { color: #f5f5f4; }
+        @keyframes slide-up-fade-in { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .content-animate .prose-custom > * {
+            opacity: 0;
+            animation: slide-up-fade-in 0.5s ease-out forwards;
+        }
+        .content-animate .prose-custom > * { animation-delay: calc(0.1s * var(--child-index)); }
+    </style>
+</head>
+<body class="text-stone-300">
+    <div class="aurora-background"></div>
+    <div id="search-modal" class="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 hidden">
+        <div id="search-modal-backdrop" class="fixed inset-0 bg-black/70 backdrop-blur-sm"></div>
+        <div class="relative z-10 w-full max-w-xl bg-stone-900/80 backdrop-blur-xl border border-stone-700 rounded-lg shadow-2xl mx-4">
+            <div class="p-4"><input type="text" id="search-input" placeholder="Search documentation..." class="w-full pl-4 pr-4 py-3 bg-transparent border-b border-stone-700 focus:border-purple-400 focus:outline-none text-stone-100 text-lg transition"></div>
+            <div id="search-results" class="p-2 max-h-[60vh] overflow-y-auto"></div>
+        </div>
+    </div>
+    <div class="lg:flex">
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 flex flex-col w-72 h-full bg-stone-950/80 backdrop-blur-xl border-r border-stone-800 transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
+            <div class="flex items-center justify-between h-18 px-6 border-b border-stone-800"><a href="#" class="text-xl font-bold text-white flex items-center gap-2"><svg class="w-7 h-7 text-purple-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5a.75.75 0 01.75.75v1.313a.75.75 0 01-1.5 0V3.25a.75.75 0 01.75-.75zM8.354 5.292a.75.75 0 011.06 0l.96.96a.75.75 0 01-1.06 1.06l-.96-.96a.75.75 0 010-1.06zM5.292 8.354a.75.75 0 010 1.06l-.96.96a.75.75 0 01-1.06-1.06l.96-.96a.75.75 0 011.06 0zM3.25 12a.75.75 0 01.75.75v1.313a.75.75 0 01-1.5 0V12.75a.75.75 0 01.75-.75zM5.292 15.646a.75.75 0 011.06 0l.96.96a.75.75 0 11-1.06 1.06l-.96-.96a.75.75 0 010-1.06zM12 20.75a.75.75 0 01-.75-.75v-1.313a.75.75 0 011.5 0v1.313a.75.75 0 01-.75.75zM15.646 15.646a.75.75 0 010 1.06l-.96.96a.75.75 0 11-1.06-1.06l.96-.96a.75.75 0 011.06 0zM20.75 12a.75.75 0 01-.75-.75V9.938a.75.75 0 011.5 0V11.25a.75.75 0 01-.75-.75zM18.708 8.354a.75.75 0 01-1.06 0l-.96-.96a.75.75 0 011.06-1.06l.96.96a.75.75 0 010 1.06zM12 6.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11z"/></svg><span>Project Docs</span></a><button id="sidebar-close-button" class="lg:hidden" aria-label="Close menu"><svg class="w-6 h-6 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button></div>
+            <nav id="nav-links" class="flex-1 p-4 overflow-y-auto"></nav>
+        </aside>
+        <main class="lg:ml-72 transition-all duration-300">
+            <header class="sticky top-0 z-30 flex items-center justify-between h-18 px-4 sm:px-8 border-b border-stone-800 bg-stone-950/70 backdrop-blur-sm"><button id="mobile-menu-button" class="lg:hidden" aria-label="Open menu"><svg class="w-6 h-6 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path></svg></button><button id="search-button" class="flex items-center gap-2 text-sm text-stone-400 hover:text-white bg-stone-900/50 hover:bg-stone-800/80 px-4 py-2 rounded-lg border border-stone-700 transition ml-auto">Search docs... <span class="text-xs border border-stone-600 rounded px-1.5 py-0.5">Ctrl K</span></button></header>
+            <div class="max-w-4xl mx-auto px-4 sm:px-8 py-8 md:py-12">
+                <div id="content-wrapper" class="content-animate">
+                    <div id="content" class="prose-custom max-w-none">
+                        <h1>Welcome to Project Docs!</h1>
+                        <p>Select a document from the sidebar to get started.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/client.js"></script>
+</body>
+</html>
