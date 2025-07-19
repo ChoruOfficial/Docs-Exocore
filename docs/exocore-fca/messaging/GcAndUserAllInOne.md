@@ -51,18 +51,18 @@ Sets or clears a nickname for a user.
  * Set nickname for a user.
  * @command /nickname set @user <nickname>
  */
-await api.nickname("Johnny", threadID, userID);
+await api.nickname("Johnny", threadID, messageID);
 
 /**
  * Clear nickname for a user.
  * @command /nickname clear @user
  */
-await api.nickname("", threadID, userID);
+await api.nickname("", threadID, messageID);
 ```
 
 ```js
-await api.nickname("Johnny", threadID, userID);
-await api.nickname("", threadID, userID);
+await api.nickname("Johnny", threadID, messageID);
+await api.nickname("", threadID, messageID);
 ```
 
 ---
