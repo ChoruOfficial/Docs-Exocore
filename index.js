@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs').promises;
 
 const app = express();
-const PORT = 3000;
+const PORT = 7860;
 const DOCS_PATH = path.join(__dirname, 'docs');
 
 const findMarkdownFiles = async (basePath, currentDir = '') => {
