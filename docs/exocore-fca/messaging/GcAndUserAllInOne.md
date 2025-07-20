@@ -212,9 +212,9 @@ module.exports = {
 
 ---
 
-## 🛡️ `/gcrule` Command
+## 👤 `/gcrule` Command
 
-Promotes or demotes a user to/from admin in the group.
+Adds or removes admin privileges for a user.
 
 ```ts
 /**
@@ -226,34 +226,101 @@ Promotes or demotes a user to/from admin in the group.
 ### Example Implementation
 
 ```js
+"use strict";
+
 module.exports = {
-  name: 'gcrule',
-  description: 'Promotes or demotes a user to/from admin.',
+    name: 'gcrule',
+    description: 'Promotes or demotes a user to/from admin.',
+    
+    async execute({ api, event, args }) {
+        try {
+            const subCommand = args[0]?.toLowerCase();
+            const mentions = Object.keys(event.mentions);
+            const validSubCommands = ["admin", "unadmin"];
+
+            if (!subCommand || !validSubCommands.includes(subCommand)) {
+                const usage = "Invalid usage.\n\nUsage:\n- /gcrule admin @user\n- /gcrule unadmin @user";
+                return api.sendMessageMqtt(usage, event.threadID, event.messageID);
+            }
+
+            if (mentions.length === 0) {
+                return api.sendMessageMqtt(`Please mention the user you want to ${subCommand}.`, event.threadID, event.messageID);
+            }
+
+            const userID = mentions[0];
+
+            const result = await api.gcrule(subCommand, userID, event.threadID);
+
+            if (result.type === 'error_gc_rule') {
+                api.sendMessageMqtt(`❌ Error: ${result.error}`, event.threadID, event.messageID);
+            } else {
+                let feedback = `Successfully performed '${result.action}' on user ${result.userID}.`;
+                api.sendMessageMqtt(feedback, event.threadID);
+            }
+        } catch (error) {
+            console.error(`A critical error occurred in 'gcrule' command:`, error);
+            api.sendMessageMqtt(`❌ A critical error occurred. Please check the console.`, event.threadID, event.messageID);
+        }
+    }
+};
+```
+
+---
+
+## 👥 `/gcmember` Command
+
+Adds or removes a user from the group chat.
+
+```ts
+/**
+ * @command /gcmember add @user | <userID>
+ * @command /gcmember remove @user | <userID>
+ */
+```
+
+### Example Implementation
+
+```js
+"use strict";
+
+module.exports = {
+  name: 'gcmember',
+  description: 'Adds or removes a user from the group chat.',
 
   async execute({ api, event, args }) {
-    const subCommand = args[0]?.toLowerCase();
-    const mentions = Object.keys(event.mentions);
-    const validSubCommands = ["admin", "unadmin"];
-
-    if (!subCommand || !validSubCommands.includes(subCommand)) {
-      const usage = "Invalid usage.\n\nUsage:\n- /gcrule admin @user\n- /gcrule unadmin @user";
-      return api.sendMessageMqtt(usage, event.threadID, event.messageID);
-    }
-
-    if (mentions.length === 0) {
-      return api.sendMessageMqtt(`Please mention the user you want to ${subCommand}.`, event.threadID, event.messageID);
-    }
-
-    const userID = mentions[0];
-
     try {
-     const result = await api.gcrule(subCommand, userID, event.threadID);
-      console.log(result);
-      console.log(`Successfully performed '${subCommand}' on user ${userID} in thread ${event.threadID}`);
-      api.setMessageReactionMqtt("👍", event.messageID, event.threadID);
+      const subCommand = args.shift()?.toLowerCase();
+      const validSubCommands = ["add", "remove"];
+
+      if (!subCommand || !validSubCommands.includes(subCommand)) {
+        const usage = "Invalid usage.\n\nUsage:\n- /gcmember add @user or <userID>\n- /gcmember remove @user or <userID>";
+        return api.sendMessageMqtt(usage, event.threadID, event.messageID);
+      }
+
+      let userIDs = Object.keys(event.mentions);
+      const idArgs = args.filter(arg => !isNaN(arg) && arg.length > 5);
+      userIDs.push(...idArgs);
+      userIDs = [...new Set(userIDs)];
+
+      if (userIDs.length === 0) {
+        return api.sendMessageMqtt(`Please mention or provide the ID of the user(s) you want to ${subCommand}.`, event.threadID, event.messageID);
+      }
+
+      const result = await api.gcmember(subCommand, userIDs, event.threadID);
+
+      if (result.type === 'error_gc') {
+        api.sendMessageMqtt(`❌ Error: ${result.error}`, event.threadID, event.messageID);
+      } else {
+        let feedback = `Successfully performed '${result.action}' on ${result.userIDs.length} user(s).`;
+        if (result.action === 'remove') {
+          feedback = `Successfully performed '${result.action}' on user ${result.userIDs[0]}.`;
+        }
+        api.sendMessageMqtt(feedback, event.threadID);
+      }
+
     } catch (error) {
-      console.error(`Error in 'gcrule' command:`, error);
-      api.sendMessageMqtt(`\u274C Sorry, an error occurred while trying to ${subCommand} the user.`, event.threadID, event.messageID);
+      console.error(`A critical error occurred in 'gcmember' command:`, error);
+      api.sendMessageMqtt(`❌ A critical error occurred. Please check the console.`, event.threadID, event.messageID);
     }
   }
 };
@@ -261,4 +328,4 @@ module.exports = {
 
 ---
 
-All commands are compatible with async/await, MQTT bots, and built-in `ws3-fca` functions like `api.sendMessageMqtt`, `api.emoji`, `api.gcname`, `api.nickname`, `api.theme`, and `api.gcrule`.
+All commands are compatible with async/await, MQTT bots, and built-in `ws3-fca` functions like `api.sendMessageMqtt`, `api.emoji`, `api.gcname`, `api.nickname`, `api.theme`, `api.gcrule`, and `api.gcmember`.
